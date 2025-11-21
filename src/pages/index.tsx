@@ -1,115 +1,201 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+import Head from 'next/head';
+import Image from 'next/image';
+import { GetStaticProps } from 'next';
+import AudioPlayer from '@/components/AudioPlayer';
+import { getTableRows } from '@/lib/baserow';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+interface FAQItem {
+  id: number;
+  name: string;
+  question: string;
+  text_block: string;
+  media_url_main: string;
+  caption_main: string;
+  display_order: string;
+  episode_1_title: string | null;
+  episode_1_body: string | null;
+  episode_1_image: string;
+  episode_1_mp3: string;
+  episode_2_title: string | null;
+  episode_2_body: string | null;
+  episode_2_image: string;
+  episode_2_mp3: string;
+  episode_3_title: string | null;
+  episode_3_body: string | null;
+  episode_3_image: string;
+  episode_3_mp3: string;
+}
 
-export default function Home() {
+interface HomeProps {
+  faqs: FAQItem[];
+}
+
+// Parse markdown links in text
+function parseMarkdownLinks(text: string) {
+  const parts: (string | JSX.Element)[] = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the link
+    parts.push(
+      <a key={key++} href={match[2]} target="_blank" rel="noopener noreferrer">
+        {match[1]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
+
+export default function Home({ faqs = [] }: HomeProps) {
+  if (!faqs || faqs.length === 0) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <Head>
+        <title>Listen to the Trees</title>
+        <meta name="description" content="A podcast featuring trees" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      
+      {/* Background layers */}
+      <div className="bg-base" />
+      <div className="bg-grain" />
+      
+      {/* Main content */}
+      <div className="main-container">
+        {/* Header */}
+        <header className="header-nav">
+          <h1 className="text-nav">Listen to the Trees</h1>
+          <div className="nav-center">
+            <span className="text-nav">FAQ</span>
+            <span className="text-nav">?</span>
+            <span className="text-nav">?</span>
+          </div>
+          <span className="text-nav">Contact</span>
+        </header>
+        
+        {/* Section Title */}
+        <h1 className="text-section-title">Frequently Asked Questions</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* FAQ Sections */}
+        <div className="faq-section">
+          {faqs.map((faq, index) => (
+            <div key={faq.id} className={`faq-item ${index < faqs.length - 1 ? 'border-bottom-light' : ''}`}>
+              <div className="faq-content">
+                {faq.question && <h3 className="text-question">{faq.question}</h3>}
+                <div className="faq-paragraphs">
+                  {faq.text_block.split('\n\n').map((paragraph, pIndex) => (
+                    <p key={pIndex} className="text-body">
+                      {parseMarkdownLinks(paragraph)}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              <div className="faq-media">
+                {/* Main media (image) */}
+                {faq.media_url_main && (
+                  <>
+                    <Image
+                      src={faq.media_url_main}
+                      alt={faq.name}
+                      width={1600}
+                      height={1000}
+                      className="faq-image"
+                    />
+                    {faq.caption_main && (
+                      <p className="image-caption">
+                        {parseMarkdownLinks(faq.caption_main)}
+                      </p>
+                    )}
+                  </>
+                )}
+                
+                {/* Episode grid (for FAQ 2) */}
+                {faq.episode_1_image && (
+                  <div className="tree-images-grid">
+                    <div className="tree-image-container">
+                      <Image
+                        src={faq.episode_1_image}
+                        alt={faq.episode_1_title || 'Episode 1'}
+                        width={400}
+                        height={400}
+                        className="tree-image"
+                      />
+                      {faq.episode_1_mp3 && (
+                        <div className="audio-player-overlay">
+                          <AudioPlayer audioUrl={faq.episode_1_mp3} />
+                        </div>
+                      )}
+                    </div>
+                    {faq.episode_2_image && (
+                      <div className="tree-image-container">
+                        <Image
+                          src={faq.episode_2_image}
+                          alt={faq.episode_2_title || 'Episode 2'}
+                          width={400}
+                          height={400}
+                          className="tree-image"
+                        />
+                        {faq.episode_2_mp3 && (
+                          <div className="audio-player-overlay">
+                            <AudioPlayer audioUrl={faq.episode_2_mp3} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {faq.episode_3_image && (
+                      <div className="tree-image-container">
+                        <Image
+                          src={faq.episode_3_image}
+                          alt={faq.episode_3_title || 'Episode 3'}
+                          width={400}
+                          height={400}
+                          className="tree-image"
+                        />
+                        {faq.episode_3_mp3 && (
+                          <div className="audio-player-overlay">
+                            <AudioPlayer audioUrl={faq.episode_3_mp3} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => {
+  const data = await getTableRows(737803);
+  
+  // Sort by display_order and filter for published items
+  const faqs = data.results
+    .filter((item: FAQItem) => item.display_order)
+    .sort((a: FAQItem, b: FAQItem) => parseInt(a.display_order) - parseInt(b.display_order));
+
+  return {
+    props: {
+      faqs,
+    },
+    revalidate: 60, // Revalidate every 60 seconds
+  };
+};

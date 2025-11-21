@@ -1,27 +1,211 @@
+@import url('https://fonts.cdnfonts.com/css/cabinet-grotesk');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --light-beige: rgb(245, 235, 225);
+  --gold: rgb(209, 127, 41);
+  --link-color: rgb(209, 142, 130);
+  --text-primary: rgb(20, 20, 19);
+  --text-secondary: rgb(133, 130, 124);
+  
+  font-style: normal;
+  font-family: "Cabinet Grotesk", sans-serif;
+  color: var(--text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0px 2px 116px 42px rgba(0, 0, 0, 0.1) inset;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100%;
+  z-index: -1;
+  background-image: url("/grain-texture.webp");
+  background-size: 256px 256px;
+  background-repeat: repeat;
+  filter: saturate(30%) brightness(118%);
+  pointer-events: none;
+}
+
+/* Main container with container queries */
+.main-container {
+  container-type: inline-size;
+  max-width: 1704px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 100px;
+  padding-right: 100px;
+  padding-top: 1.5cqw;
+  padding-bottom: 4cqw;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Background layers */
+.bg-base {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+  display: flex;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 116px 42px inset;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: var(--link-color);
+}
+
+a:hover {
+  color: rgb(179, 90, 74);
+}
+
+/* Typography */
+.text-nav {
+  font-size: 1.2cqw;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.text-section-title {
+  font-size: 5cqw;
+  font-weight: 600;
+  letter-spacing: -0.15cqw;
+  margin-bottom: 4cqw;
+  margin-top: 4cqw;
+  margin-left: 26cqw;
+  color: var(--text-primary);
+}
+
+.text-question {
+  font-size: 1.1cqw;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 1.5cqw;
+}
+
+.text-body {
+  font-size: 1.1cqw;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Header/Nav */
+.header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5cqw;
+}
+
+.nav-center {
+  display: flex;
+  column-gap: 1.5cqw;
+}
+
+/* FAQ Section */
+.faq-section {
+  display: flex;
+  flex-direction: column;
+  row-gap: 4cqw;
+}
+
+.faq-item {
+  display: flex;
+  flex-direction: row;
+  column-gap: 4cqw;
+  align-items: flex-start;
+}
+
+.faq-content {
+  width: 22cqw;
+  flex-shrink: 0;
+}
+
+.faq-media {
+  flex: 1;
+}
+
+.faq-paragraphs {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1cqw;
+}
+
+.faq-paragraphs p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Image styling */
+.faq-image {
+  width: 100%;
+  height: auto;
+}
+
+.image-caption {
+  font-size: 1.1cqw;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-secondary);
+  height: 4cqw;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* Tree images grid for FAQ 2 */
+.tree-images-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5cqw;
+}
+
+.tree-image-container {
+  position: relative;
+}
+
+.tree-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+/* Audio player overlay */
+.audio-player-overlay {
+  width: 100%;
+}
+
+/* Borders */
+.border-bottom-light {
+  border-bottom: 1px solid rgb(226, 226, 226);
 }
