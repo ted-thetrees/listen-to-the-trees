@@ -1,6 +1,13 @@
 const BASEROW_TOKEN = 'rn1LuQywePUftp2kvQUxTzuBGHljqzLr';
 const BASEROW_API = 'https://api.baserow.io/api';
 
+const DESIGN_VALUES_TABLE_ID = 751854;
+
+export async function getDesignValues() {
+  const data = await getTableRows(DESIGN_VALUES_TABLE_ID);
+  return data.results;
+}
+
 export async function getTableRows(tableId: number) {
   const response = await fetch(`${BASEROW_API}/database/rows/table/${tableId}/?user_field_names=true`, {
     headers: {

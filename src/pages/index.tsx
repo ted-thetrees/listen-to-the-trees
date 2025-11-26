@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { GetStaticProps } from 'next';
 import AudioPlayer from '@/components/AudioPlayer';
-import { getTableRows } from '@/lib/baserow';
+import { getTableRows, getDesignValues } from '@/lib/baserow';
 
 interface FAQItem {
   id: number;
@@ -28,6 +28,7 @@ interface FAQItem {
 
 interface HomeProps {
   faqs: FAQItem[];
+  cssVariables: Record<string, string>;
 }
 
 // Parse markdown links in text
@@ -58,10 +59,15 @@ function parseMarkdownLinks(text: string) {
   return parts;
 }
 
-export default function Home({ faqs = [] }: HomeProps) {
+export default function Home({ faqs = [], cssVariables = {} }: HomeProps) {
   if (!faqs || faqs.length === 0) {
     return <div>Loading...</div>;
   }
+
+  // Generate CSS custom properties string
+  const cssVarsString = Object.entries(cssVariables)
+    .map(([key, value]) => `--${key}: ${value};`)
+    .join('\n    ');
 
   return (
     <>
@@ -70,6 +76,13 @@ export default function Home({ faqs = [] }: HomeProps) {
         <meta name="description" content="A podcast featuring trees" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+      
+      {/* Inject CSS variables from Baserow */}
+      <style jsx global>{`
+        :root {
+          ${cssVarsString}
+        }
+      `}</style>
       
       {/* Background layers */}
       <div className="bg-base" />
@@ -135,6 +148,11 @@ export default function Home({ faqs = [] }: HomeProps) {
                         height={400}
                         className="tree-image"
                       />
+                      {faq.episode_1_body && (
+                        <div className="episode-body">
+                          <p className="text-body">{faq.episode_1_body}</p>
+                        </div>
+                      )}
                       {faq.episode_1_mp3 && (
                         <div className="audio-player-overlay">
                           <AudioPlayer audioUrl={faq.episode_1_mp3} />
@@ -150,6 +168,11 @@ export default function Home({ faqs = [] }: HomeProps) {
                           height={400}
                           className="tree-image"
                         />
+                        {faq.episode_2_body && (
+                          <div className="episode-body">
+                            <p className="text-body">{faq.episode_2_body}</p>
+                          </div>
+                        )}
                         {faq.episode_2_mp3 && (
                           <div className="audio-player-overlay">
                             <AudioPlayer audioUrl={faq.episode_2_mp3} />
@@ -166,6 +189,11 @@ export default function Home({ faqs = [] }: HomeProps) {
                           height={400}
                           className="tree-image"
                         />
+                        {faq.episode_3_body && (
+                          <div className="episode-body">
+                            <p className="text-body">{faq.episode_3_body}</p>
+                          </div>
+                        )}
                         {faq.episode_3_mp3 && (
                           <div className="audio-player-overlay">
                             <AudioPlayer audioUrl={faq.episode_3_mp3} />
@@ -186,15 +214,24 @@ export default function Home({ faqs = [] }: HomeProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const data = await getTableRows(737803);
+  const designValues = await getDesignValues();
   
   // Sort by display_order and filter for published items
   const faqs = data.results
     .filter((item: FAQItem) => item.display_order)
     .sort((a: FAQItem, b: FAQItem) => parseInt(a.display_order) - parseInt(b.display_order));
 
+  // Convert design values to CSS custom properties
+  const cssVariables = designValues.reduce((acc: Record<string, string>, item: any) => {
+    const varName = item.Name.toLowerCase().replace(/\s+/g, '-');
+    acc[varName] = item.Value;
+    return acc;
+  }, {});
+
   return {
     props: {
       faqs,
+      cssVariables,
     },
     revalidate: 60, // Revalidate every 60 seconds
   };
