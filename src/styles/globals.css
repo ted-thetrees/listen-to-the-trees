@@ -109,6 +109,7 @@ a:hover {
   line-height: 1.2;
   color: var(--text-primary);
   margin-bottom: 1.5cqw;
+  text-wrap: balance;
 }
 
 .text-body {
