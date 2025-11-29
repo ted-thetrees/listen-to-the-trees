@@ -23,6 +23,7 @@ export const getImageUrl = (filename: string): string => {
 };
 
 // For Next.js Image component
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   // DigitalOcean Spaces doesn't have built-in image optimization
   // Return the original URL - consider adding imgproxy later for optimization
