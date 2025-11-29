@@ -222,6 +222,7 @@ export const getStaticProps: GetStaticProps = async () => {
     .sort((a: FAQItem, b: FAQItem) => parseInt(a.display_order) - parseInt(b.display_order));
 
   // Convert design values to CSS custom properties
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cssVariables = designValues.reduce((acc: Record<string, string>, item: any) => {
     const varName = item.Name.toLowerCase().replace(/\s+/g, '-');
     acc[varName] = item.Value;
