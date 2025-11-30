@@ -2,11 +2,8 @@
 // Base URLs for media assets
 
 export const MEDIA_CONFIG = {
-  // Use CDN for production (faster delivery)
-  baseUrl: 'https://trees-media.nyc3.cdn.digitaloceanspaces.com',
-  
-  // Direct URL (use if CDN has issues)
-  directUrl: 'https://trees-media.nyc3.digitaloceanspaces.com',
+  // Direct Spaces URL (CDN not currently enabled)
+  baseUrl: 'https://trees-media.nyc3.digitaloceanspaces.com',
   
   // Paths
   audio: '/audio',
