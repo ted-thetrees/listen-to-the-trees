@@ -8,7 +8,12 @@ export interface AudioPlayerHandle {
   play: () => void;
   pause: () => void;
   toggle: () => void;
+  seek: (time: number) => void;
+  seekToPercent: (percent: number) => void;
   isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  progress: number;
 }
 
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ audioUrl }, ref) => {
@@ -38,7 +43,25 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ audioUrl 
     toggle: () => {
       togglePlay();
     },
+    seek: (time: number) => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
+        setCurrentTime(audio.currentTime);
+      }
+    },
+    seekToPercent: (percent: number) => {
+      const audio = audioRef.current;
+      if (audio && audio.duration) {
+        const clampedPercent = Math.max(0, Math.min(percent, 100));
+        audio.currentTime = (clampedPercent / 100) * audio.duration;
+        setCurrentTime(audio.currentTime);
+      }
+    },
     isPlaying,
+    currentTime,
+    duration,
+    progress: duration ? (currentTime / duration) * 100 : 0,
   }));
 
   useEffect(() => {
