@@ -1,16 +1,45 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 interface AudioPlayerProps {
   audioUrl: string;
 }
 
-export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
+export interface AudioPlayerHandle {
+  play: () => void;
+  pause: () => void;
+  toggle: () => void;
+  isPlaying: boolean;
+}
+
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ audioUrl }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
+
+  // Expose controls to parent components via ref
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.play();
+        setIsPlaying(true);
+      }
+    },
+    pause: () => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        setIsPlaying(false);
+      }
+    },
+    toggle: () => {
+      togglePlay();
+    },
+    isPlaying,
+  }));
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -257,7 +286,11 @@ export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
       `}</style>
     </div>
   );
-}
+});
+
+AudioPlayer.displayName = 'AudioPlayer';
+
+export default AudioPlayer;
 
 
 // Icon components
