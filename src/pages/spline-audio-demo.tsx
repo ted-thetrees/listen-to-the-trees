@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import SplineAudioPlayer from '@/components/SplineAudioPlayer';
 import { getAudioUrl } from '@/lib/media';
 
@@ -24,21 +24,15 @@ const SAMPLE_EPISODES = [
   },
 ];
 
+// Exported Spline scene URL
+const SPLINE_SCENE_URL = 'https://prod.spline.design/Aus4nR1hKQoZHyfN/scene.splinecode';
+
 /**
  * Demo page for Spline + AudioPlayer integration
- * 
- * To use this page:
- * 1. Export your Spline scene as Code (.splinecode)
- * 2. Replace SPLINE_SCENE_URL with your scene URL
- * 3. Ensure your Spline scene has an object named 'Cylinder' (or update triggerObjectName)
  */
 export default function SplineAudioDemo() {
   const [currentEpisode, setCurrentEpisode] = useState(SAMPLE_EPISODES[0]);
   const [isPlaying, setIsPlaying] = useState(false);
-
-  // TODO: Replace with your exported Spline scene URL
-  // Export from Spline: Export > Code > Copy URL
-  const SPLINE_SCENE_URL = 'https://prod.spline.design/YOUR_SCENE_ID/scene.splinecode';
 
   return (
     <div style={{ 
@@ -94,39 +88,12 @@ export default function SplineAudioDemo() {
         borderRadius: '8px',
         overflow: 'hidden',
       }}>
-        {/* 
-          NOTE: Until you export your Spline scene, this will show an error.
-          
-          Steps to get it working:
-          1. Open your Spline project
-          2. Click Export > Code
-          3. Copy the scene URL
-          4. Replace SPLINE_SCENE_URL above
-          5. Make sure your clickable object is named 'Cylinder'
-        */}
         <SplineAudioPlayer
           sceneUrl={SPLINE_SCENE_URL}
           audioUrl={getAudioUrl(currentEpisode.audioFile)}
           triggerObjectName="Cylinder"
           onPlayStateChange={setIsPlaying}
         />
-      </div>
-
-      {/* Instructions */}
-      <div style={{ 
-        marginTop: '3rem', 
-        padding: '1.5rem', 
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: '8px',
-        maxWidth: '800px',
-      }}>
-        <h3 style={{ marginBottom: '1rem' }}>How to use:</h3>
-        <ol style={{ lineHeight: 1.8, paddingLeft: '1.5rem' }}>
-          <li>Export your Spline scene: <code>Export → Code → Copy URL</code></li>
-          <li>Replace <code>SPLINE_SCENE_URL</code> in this file with your scene URL</li>
-          <li>Ensure your play button object in Spline is named <code>Cylinder</code></li>
-          <li>Click the 3D object to toggle play/pause</li>
-        </ol>
       </div>
     </div>
   );
