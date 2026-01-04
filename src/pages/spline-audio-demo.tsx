@@ -24,8 +24,8 @@ const SAMPLE_EPISODES = [
   },
 ];
 
-// Exported Spline scene URL
-const SPLINE_SCENE_URL = 'https://prod.spline.design/Aus4nR1hKQoZHyfN/scene.splinecode';
+// Exported Spline scene URL (with cache bust)
+const SPLINE_SCENE_URL = 'https://prod.spline.design/Aus4nR1hKQoZHyfN/scene.splinecode?v=6';
 
 /**
  * Demo page for Spline + AudioPlayer integration
@@ -83,7 +83,7 @@ export default function SplineAudioDemo() {
 
       {/* Spline + Audio Player */}
       <div style={{ 
-        maxWidth: '800px',
+        width: '100%',
         backgroundColor: 'rgba(0,0,0,0.3)',
         borderRadius: '8px',
         overflow: 'hidden',
@@ -91,7 +91,7 @@ export default function SplineAudioDemo() {
         <SplineAudioPlayer
           sceneUrl={SPLINE_SCENE_URL}
           audioUrl={getAudioUrl(currentEpisode.audioFile)}
-          triggerObjectName="Cylinder"
+          triggerObjectName="Play Button"
           onPlayStateChange={setIsPlaying}
         />
       </div>

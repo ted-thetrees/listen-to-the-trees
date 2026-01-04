@@ -16,6 +16,10 @@ interface SplineAudioPlayerProps {
   className?: string;
 }
 
+// Progress bar position mapping
+const PROGRESS_X_START = -225;
+const PROGRESS_X_END = 225;
+
 /**
  * SplineAudioPlayer - Combines a Spline 3D scene with an AudioPlayer
  * 
@@ -28,7 +32,7 @@ interface SplineAudioPlayerProps {
  * <SplineAudioPlayer
  *   sceneUrl="https://prod.spline.design/xxx/scene.splinecode"
  *   audioUrl={getAudioUrl('Novelist-Maine-001.mp3')}
- *   triggerObjectName="Cylinder"
+ *   triggerObjectName="Play Button"
  * />
  * ```
  */
@@ -41,6 +45,20 @@ export default function SplineAudioPlayer({
 }: SplineAudioPlayerProps) {
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const splineRef = useRef<Application>();
+
+  // Map percentage (0-100) to X position for progress handle
+  const mapProgressToX = (percentage: number): number => {
+    return PROGRESS_X_START + (percentage / 100) * (PROGRESS_X_END - PROGRESS_X_START);
+  };
+
+  // Update Spline progress variable when audio progress changes
+  const handleProgressUpdate = useCallback((percentage: number) => {
+    const spline = splineRef.current;
+    if (spline) {
+      const xPosition = mapProgressToX(percentage);
+      spline.setVariable('progress', xPosition);
+    }
+  }, []);
 
   const handleSplineLoad = useCallback((splineApp: Application) => {
     splineRef.current = splineApp;
@@ -59,18 +77,42 @@ export default function SplineAudioPlayer({
   }, [triggerObjectName, onPlayStateChange]);
 
   return (
-    <div className={className} style={{ position: 'relative' }}>
+    <div className={className} style={{ position: 'relative', width: '100%' }}>
       {/* Spline 3D scene - visual interface */}
-      <Spline
-        scene={sceneUrl}
-        onLoad={handleSplineLoad}
-      />
+      {/* Container maintains 7:1 aspect ratio, Spline canvas scales to fit */}
+      <div style={{ 
+        width: '100%', 
+        aspectRatio: '7 / 1',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          width: '700px',
+          height: '100px',
+          transformOrigin: 'top left',
+          transform: 'scale(var(--spline-scale, 1))',
+        }} ref={(el) => {
+          if (el) {
+            const updateScale = () => {
+              const parentWidth = el.parentElement?.clientWidth || 700;
+              el.style.setProperty('--spline-scale', String(parentWidth / 700));
+            };
+            updateScale();
+            window.addEventListener('resize', updateScale);
+          }
+        }}>
+          <Spline
+            scene={sceneUrl}
+            onLoad={handleSplineLoad}
+          />
+        </div>
+      </div>
       
       {/* AudioPlayer - handles actual audio playback */}
-      <div style={{ marginTop: '1rem' }}>
+      <div>
         <AudioPlayer
           ref={audioPlayerRef}
           audioUrl={audioUrl}
+          onProgressUpdate={handleProgressUpdate}
         />
       </div>
     </div>
