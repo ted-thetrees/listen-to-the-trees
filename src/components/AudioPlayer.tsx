@@ -1,16 +1,68 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 interface AudioPlayerProps {
   audioUrl: string;
 }
 
-export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
+export interface AudioPlayerHandle {
+  play: () => void;
+  pause: () => void;
+  toggle: () => void;
+  seek: (time: number) => void;
+  seekToPercent: (percent: number) => void;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  progress: number;
+}
+
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ audioUrl }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
+
+  // Expose controls to parent components via ref
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.play();
+        setIsPlaying(true);
+      }
+    },
+    pause: () => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        setIsPlaying(false);
+      }
+    },
+    toggle: () => {
+      togglePlay();
+    },
+    seek: (time: number) => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
+        setCurrentTime(audio.currentTime);
+      }
+    },
+    seekToPercent: (percent: number) => {
+      const audio = audioRef.current;
+      if (audio && audio.duration) {
+        const clampedPercent = Math.max(0, Math.min(percent, 100));
+        audio.currentTime = (clampedPercent / 100) * audio.duration;
+        setCurrentTime(audio.currentTime);
+      }
+    },
+    isPlaying,
+    currentTime,
+    duration,
+    progress: duration ? (currentTime / duration) * 100 : 0,
+  }));
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -257,7 +309,11 @@ export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
       `}</style>
     </div>
   );
-}
+});
+
+AudioPlayer.displayName = 'AudioPlayer';
+
+export default AudioPlayer;
 
 
 // Icon components
