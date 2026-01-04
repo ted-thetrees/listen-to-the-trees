@@ -1,56 +1,96 @@
 # Session Notes: Spline Audio Player Embed Sizing
 **Date:** January 4, 2026
+**Status:** ✅ COMPLETE
 
-## Context
-Continuing work on the Spline audio player integration. The progress bar and handle are now working - audio progress updates the Spline `progress` variable which moves the handle from X position -225 to +225.
+## Summary
+Successfully configured Spline audio player to scale responsively to full container width while maintaining proper aspect ratio and click interactions.
 
-## Goal
-Get the Spline scene (700x100 Player Background) to fit full-width in a flex container on the demo page, with no camera rotation/pan/zoom.
+## Final Working Configuration
 
-## Spline Play Settings Changes Made
+### Spline Editor Settings
 
-In Spline Editor → Export → Play Settings tab:
+**Frame (in right panel):**
+- **Size** → Custom Size
+- **W** → 700
+- **H** → 100
+- **Auto Zoom** → Yes
 
-1. **Orbit** → No
-2. **Pan** → No  
-3. **Zoom** → No
-4. **Soft Orbit** → No
-
-### Still needed (from docs):
+**Play Settings (Export → Play Settings tab):**
+- **Orbit** → No
+- **Pan** → No  
+- **Zoom** → No
+- **Soft Orbit** → No
 - **Touch Settings → Orbit** → Disabled
 - **Touch Settings → Pan** → Disabled
 - **Touch Settings → Zoom** → None
 
-## Code Changes Made (from previous session)
+### Code Implementation
 
-### SplineAudioPlayer.tsx
-- Added `PROGRESS_X_START = -225` and `PROGRESS_X_END = 225` constants
-- Added `mapProgressToX()` function to convert percentage (0-100) to X position
-- Added `handleProgressUpdate()` callback that calls `spline.setVariable('progress', xPosition)`
-- Removed `setZoom(1.5)` from handleSplineLoad
-- Changed container to `width: '100%'` (no fixed height)
+**SplineAudioPlayer.tsx - Responsive Scaling:**
+```tsx
+// Container maintains 7:1 aspect ratio, Spline canvas scales to fit
+<div style={{ 
+  width: '100%', 
+  aspectRatio: '7 / 1',
+  overflow: 'hidden',
+}}>
+  <div style={{
+    width: '700px',
+    height: '100px',
+    transformOrigin: 'top left',
+    transform: 'scale(var(--spline-scale, 1))',
+  }} ref={(el) => {
+    if (el) {
+      const updateScale = () => {
+        const parentWidth = el.parentElement?.clientWidth || 700;
+        el.style.setProperty('--spline-scale', String(parentWidth / 700));
+      };
+      updateScale();
+      window.addEventListener('resize', updateScale);
+    }
+  }}>
+    <Spline scene={sceneUrl} onLoad={handleSplineLoad} />
+  </div>
+</div>
+```
 
-### AudioPlayer.tsx
-- Added `onProgressUpdate?: (percentage: number) => void` prop
-- Updated `handleTimeUpdate()` to calculate and emit progress percentage
+**Key technique:** CSS transform scale to stretch the fixed 700x100 Spline canvas to fill any container width while maintaining aspect ratio.
 
-### spline-audio-demo.tsx
-- Changed container from `maxWidth: '800px'` to `width: '100%'`
-- Cache-busted Spline URL with `?v=4`
+**spline-audio-demo.tsx - Trigger Object Name:**
+```tsx
+<SplineAudioPlayer
+  sceneUrl={SPLINE_SCENE_URL}
+  audioUrl={getAudioUrl(currentEpisode.audioFile)}
+  triggerObjectName="Play Button"  // Must match exact Spline object name
+  onPlayStateChange={setIsPlaying}
+/>
+```
+
+### Progress Bar Integration
+- Audio progress (0-100%) maps to X position (-225 to +225)
+- `spline.setVariable('progress', xPosition)` updates the handle position
+- Works in both directions: Spline click → audio play, audio progress → Spline update
+
+## Spline Object Names (for reference)
+- Progress Bar
+- Player Background
+- Progress Handle (has Event)
+- Play Button (has Event)
+- Directional Light
 
 ## Official Spline Docs References
 
-### Play Settings (https://docs.spline.design/exporting-your-scene/play-settings)
-- **Orbit, Pan, Zoom** → "Decide if you want to lock movement on your scene by allowing Orbit, Pan and Zoom or not"
-- **Touch Settings Orbit/Pan** → "Following options are available: 1 Finger, 2 Fingers, 3 Fingers, Disabled"
-- **Touch Settings Zoom** → "If set to pinching, zoom is possible via the pinch gesture. None will disable zooming"
+### Play Settings
+https://docs.spline.design/exporting-your-scene/play-settings
+- Orbit, Pan, Zoom controls
+- Touch Settings for mobile
+- Auto Zoom for responsive scaling
 
-### Auto Zoom
-- Found in Frame section of Play Settings
-- Should be set to "Yes" for responsive scaling
+### Frame/Custom Size
+- Found in right panel under "Frame" section
+- Size dropdown → Custom Size
+- Enter exact pixel dimensions (W × H)
 
-## Next Steps
-1. Disable Touch Settings (Orbit, Pan, Zoom) in Spline
-2. Click "Update Code Export" 
-3. Update the scene URL in code (or cache bust)
-4. Test the embed sizing on the demo page
+## Commits
+- `ad0d068` - Initial documentation
+- `f80d589` - Fix Spline audio player sizing and click trigger
